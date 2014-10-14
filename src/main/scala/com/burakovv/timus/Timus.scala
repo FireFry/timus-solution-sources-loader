@@ -1,15 +1,30 @@
 package com.burakovv.timus
 
-import org.jsoup.Jsoup
+import org.jsoup.{Connection, Jsoup}
 import org.jsoup.nodes.{Node, Document, TextNode}
 import scala.collection.immutable
 import scala.collection.mutable.ArrayBuffer
 import com.burakovv.timus.ProblemStatus.ProblemStatus
 
 object Timus {
-  def profile(author: Author): Option[Profile] = Profile.parse(loadPage(profileUrl(author)))
-  def loadPage(url: String): Document = Jsoup.connect(url).get()
-  def profileUrl(author: Author): String = s"http://acm.timus.ru/author.aspx?id=${author.id}"
+  def profile(author: Author): Option[Profile] = Profile parse {
+    Jsoup.
+      connect(s"http://acm.timus.ru/author.aspx?id=${author.id}").
+      get()
+  }
+
+  def submissions(problem: Problem): Seq[Submission] = ???
+
+  def source(submission: Submission, credentials: Credentials): Source = Source {
+    Jsoup.
+      connect(s"http://acm.timus.ru/getsubmit.aspx/${submission.id}.java").
+      data("Action", "getsubmit").
+      data("JudgeID", credentials.login).
+      data("Password", credentials.password).
+      method(Connection.Method.POST).
+      execute().
+      body()
+  }
 }
 
 case class Author(id: Int)
@@ -22,6 +37,12 @@ object ProblemStatus extends Enumeration {
   type ProblemStatus = Value
   val Accepted, Failed, Untouched = Value
 }
+
+case class Credentials(login: String, password: String)
+
+case class Submission(accepted: Boolean, id: Int, langExtension: String, runtime: Double)
+
+case class Source(text: String)
 
 private[timus] object Profile {
   def parse(document: Document): Option[Profile] = isKnownAuthor(document) match {

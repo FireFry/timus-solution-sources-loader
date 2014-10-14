@@ -3,8 +3,12 @@ import scala.App
 
 object Test extends App {
   val id = Integer.parseInt(System.getProperty("author"))
-  val login = Integer.parseInt(System.getProperty("login"))
-  val password = Integer.parseInt(System.getProperty("password"))
+  val login = System.getProperty("login")
+  val password = System.getProperty("password")
+
+  def findBest(submissions: Seq[Submission]) = ???
+
+  def saveSource(source: Source) = ???
 
   for {
     profile <- Timus.profile(Author(id))
