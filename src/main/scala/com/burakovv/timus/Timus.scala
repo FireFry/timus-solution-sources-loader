@@ -14,9 +14,9 @@ object Timus {
       get()
   }
 
-  def submissions(problem: Problem): Seq[Submission] = Submission parse {
+  def submissions(problemId: Int): Seq[Submission] = Submission parse {
     Jsoup.
-      connect(s"http://acm.timus.ru/status.aspx?space=1&num=${problem.id}&author=42165&count=100").
+      connect(s"http://acm.timus.ru/status.aspx?space=1&num=$problemId&author=42165&count=100").
       get()
   }
 

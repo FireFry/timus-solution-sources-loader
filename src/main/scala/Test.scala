@@ -1,7 +1,8 @@
-import com.burakovv.timus._
+import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import scala.App
+
+import com.burakovv.timus._
 
 object Test extends App {
   val id = Integer.parseInt(System.getProperty("author"))
@@ -14,16 +15,18 @@ object Test extends App {
     if (s.accepted && s.runtime < min.runtime) s else min
   }))
 
-  def saveSource(problem: Problem, submission: Submission, source: Source) = {
+  def saveSource(problemId: Int, submission: Submission, source: Source) = {
     sources += 1
     println(s"Saving source $sources for $submission")
-    Files.write(Paths.get(s"${dir}${problem.id}.${submission.langExtension}"), source.text.getBytes(StandardCharsets.UTF_8))
+    Files.write(Paths.get(s"${dir}$problemId.${submission.langExtension}"), source.text.getBytes(StandardCharsets.UTF_8))
   }
+
+  val solvedProblems: Seq[Int] = new File(dir).list().filter(_.matches( """[0-9]+\.\w+""")).map(name => name.split('.')(0).toInt)
 
   for {
     profile <- Timus.profile(Author(id))
-    problem <- profile.problems if problem.status == ProblemStatus.Accepted
-    bestTry <- findBest(Timus.submissions(problem))
+    problemId <- profile.problems.filter(_.status == ProblemStatus.Accepted).map(_.id).diff(solvedProblems)
+    bestTry <- findBest(Timus.submissions(problemId))
     source <- Timus.source(bestTry, Credentials(login, password))
-  } saveSource(problem, bestTry, source)
+  } saveSource(problemId, bestTry, source)
 }
